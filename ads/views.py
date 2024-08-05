@@ -7,6 +7,8 @@ from rest_framework import views
 from django.utils import timezone
 
 
+# Crud operations on Ads performed by the merchant!
+
 class AdViewSet(viewsets.ModelViewSet):
     queryset = Ad.objects.all()
     serializer_class = AdSerializer
@@ -23,12 +25,11 @@ class AdViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-
+# Create analytics from here. PRovide just the ad and playtime total
 class TrackAnalyticsView(views.APIView):
     def post(self, request, *args, **kwargs):
-        ad_id = request.data.get('ad_id')
+        ad_id = request.data.get('ad')
         playtime = request.data.get('playtime')
-
         try:
             ad = Ad.objects.get(id=ad_id)
             analytics, created = AdAnalytics.objects.get_or_create(ad=ad)
@@ -38,6 +39,7 @@ class TrackAnalyticsView(views.APIView):
             return Response({'error': 'Ad not found'}, status=status.HTTP_404_NOT_FOUND)
         
 
+# Gets only for the month specified. FOrmat: ?month=YYYY-mm
 class GetMonthlyPlaytimeView(views.APIView):
     def get(self, request, ad_id, *args, **kwargs):
         month = request.query_params.get('month')
@@ -74,7 +76,7 @@ class GetMonthlyPlaytimeView(views.APIView):
             return Response({'error': 'Ad not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
-
+# gets data for all months in this itself
 
 class GetAllMonthlyPlaytimeView(views.APIView):
     def get(self, request, ad_id, *args, **kwargs):
