@@ -57,6 +57,7 @@ This is a Django project that provides user registration and login functionality
 
 
    Login route -> /api/login
+   
    Registration route -> /api/register
 
    
