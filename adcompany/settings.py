@@ -39,7 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    # Below all apps I create
     'users',
+    'ads',
 ]
 
 REST_FRAMEWORK = {
