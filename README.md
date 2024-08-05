@@ -22,8 +22,8 @@ This is a Django project that provides user registration and login functionality
 1. **Clone the Repository**
 
    ```bash
-   git clone https://github.com/yourusername/your-repository.git
-   cd your-repository
+   git clone https://github.com/A-Anirudh/adcompany.git
+   cd adcompany
    ```
    Create virtual environment and install the required dependencies
    Linux:
