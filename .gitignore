@@ -5,4 +5,4 @@
 *.pyd
 
 # Ignore Django migration files
-*/migrations/
+# */migrations/
