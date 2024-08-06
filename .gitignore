@@ -3,6 +3,7 @@
 *.pyc
 *.pyo
 *.pyd
+*env
 
 # Ignore Django migration files
 # */migrations/
