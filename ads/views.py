@@ -42,6 +42,8 @@ class TrackAnalyticsView(views.APIView):
 
 # Gets only for the month specified. FOrmat: ?month=YYYY-mm
 class GetMonthlyPlaytimeView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request, ad_id, *args, **kwargs):
         month = request.query_params.get('month')
         
@@ -80,6 +82,8 @@ class GetMonthlyPlaytimeView(views.APIView):
 # gets data for all months in this itself
 
 class GetAllMonthlyPlaytimeView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request, ad_id, *args, **kwargs):
         try:
             # Retrieve the ad object
