@@ -9,6 +9,7 @@ from django.utils import timezone
 
 # Crud operations on Ads performed by the merchant!
 
+# All ads of a particular user
 class AdViewSet(viewsets.ModelViewSet):
     queryset = Ad.objects.all()
     serializer_class = AdSerializer
