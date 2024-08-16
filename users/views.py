@@ -43,19 +43,27 @@ def csrf_token_view(request):
 def test_view(request):
     return JsonResponse({'message': 'This is a test endpoint.'})
 
-@api_view(['PUT', 'PATCH'])
+
+@api_view(['GET', 'PUT', 'PATCH'])
 @permission_classes([IsAuthenticated])
-def update_ad_preferences(request):
+def ad_preferences(request):
     try:
-        # Retrieve the AdPreferences object for the current user
         ad_preferences = AdPreferences.objects.get(user=request.user)
     except AdPreferences.DoesNotExist:
-        return Response({"error": "Ad preferences not found."}, status=status.HTTP_404_NOT_FOUND)
+        if request.method == 'GET':
+            return Response({"error": "Ad preferences not found."}, status=status.HTTP_404_NOT_FOUND)
+        elif request.method in ['PUT', 'PATCH']:
+            # Optionally, you could create a new AdPreferences instance if it doesn't exist,
+            # but typically you would only allow updates to existing records.
+            return Response({"error": "Ad preferences not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    # Serialize and validate the incoming data
-    serializer = AdPreferencesSerializer(ad_preferences, data=request.data, partial=True)
-    if serializer.is_valid():
-        # Save the updated ad preferences
-        serializer.save()
+    if request.method == 'GET':
+        serializer = AdPreferencesSerializer(ad_preferences)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method in ['PUT', 'PATCH']:
+        serializer = AdPreferencesSerializer(ad_preferences, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
