@@ -9,9 +9,9 @@ from django.http import JsonResponse
 from .models import AdPreferences
 from .serializers import AdPreferencesSerializer
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
-@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])  # Allow any user to register
 def register_user(request):
@@ -21,9 +21,9 @@ def register_user(request):
         return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
     return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-@csrf_exempt
+
 @api_view(['POST'])
-@permission_classes([AllowAny])  # Allow any user to login
+@permission_classes([AllowAny])
 def login_user(request):
     serializer = LoginSerializer(data=request.data)
     if serializer.is_valid():
@@ -31,26 +31,23 @@ def login_user(request):
         password = serializer.validated_data['password']
         user = authenticate(request, email=email, password=password)
         if user is not None:
-            login(request, user)
-            return Response({'message': 'Login successful'}, status=status.HTTP_200_OK)
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }, status=status.HTTP_200_OK)
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
     return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
-@csrf_exempt
+
 @api_view(['GET'])
 @permission_classes([AllowAny])  # Allow any user to access this endpoint
 def csrf_token_view(request):
     token = get_token(request)
     return JsonResponse({'csrfToken': token})
 
-@csrf_exempt
-@api_view(['GET'])
-@permission_classes([AllowAny])  # Allow any user to access this test endpoint
-def test_view(request):
-    return JsonResponse({'message': 'This is a test endpoint.'})
 
-@csrf_exempt
 
 @api_view(['GET', 'PUT', 'PATCH'])
 @permission_classes([IsAuthenticated])
@@ -61,8 +58,6 @@ def ad_preferences(request):
         if request.method == 'GET':
             return Response({"error": "Ad preferences not found."}, status=status.HTTP_404_NOT_FOUND)
         elif request.method in ['PUT', 'PATCH']:
-            # Optionally, you could create a new AdPreferences instance if it doesn't exist,
-            # but typically you would only allow updates to existing records.
             return Response({"error": "Ad preferences not found."}, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
@@ -75,3 +70,10 @@ def ad_preferences(request):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])  # Allow any user to access this test endpoint
+def test_view(request):
+    return JsonResponse({'message': 'This is a test endpoint.'})
