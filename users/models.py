@@ -1,6 +1,7 @@
 from django.core.validators import RegexValidator, MinLengthValidator, MaxLengthValidator
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
+from django.conf import settings
 
 
 ROLE_CHOICES = (
@@ -54,3 +55,14 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+    
+class AdPreferences(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    google_ads_opt_in = models.BooleanField(default=False)
+    facebook_ads_opt_in = models.BooleanField(default=False)
+    metrad_opt_in = models.BooleanField(default=True)
+
+
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name}"
+

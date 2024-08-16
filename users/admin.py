@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser
+from .models import CustomUser,AdPreferences
 
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
@@ -23,3 +23,4 @@ class CustomUserAdmin(UserAdmin):
     filter_horizontal = ('groups', 'user_permissions',)
 
 admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(AdPreferences)
