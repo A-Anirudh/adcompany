@@ -8,7 +8,10 @@ from django.middleware.csrf import get_token
 from django.http import JsonResponse
 from .models import AdPreferences
 from .serializers import AdPreferencesSerializer
+from django.views.decorators.csrf import csrf_exempt
 
+
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])  # Allow any user to register
 def register_user(request):
@@ -18,6 +21,7 @@ def register_user(request):
         return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
     return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])  # Allow any user to login
 def login_user(request):
@@ -32,17 +36,21 @@ def login_user(request):
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
     return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
+
+@csrf_exempt
 @api_view(['GET'])
 @permission_classes([AllowAny])  # Allow any user to access this endpoint
 def csrf_token_view(request):
     token = get_token(request)
     return JsonResponse({'csrfToken': token})
 
+@csrf_exempt
 @api_view(['GET'])
 @permission_classes([AllowAny])  # Allow any user to access this test endpoint
 def test_view(request):
     return JsonResponse({'message': 'This is a test endpoint.'})
 
+@csrf_exempt
 
 @api_view(['GET', 'PUT', 'PATCH'])
 @permission_classes([IsAuthenticated])
