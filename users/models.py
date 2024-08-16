@@ -1,7 +1,14 @@
-# users/models.py
-
+from django.core.validators import RegexValidator, MinLengthValidator, MaxLengthValidator
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
+
+
+ROLE_CHOICES = (
+    ('driver', 'driver'),
+    ('merchant','merchant'),
+    ('admin','admin')
+)
+
 
 # Manges the creation of custom user
 class CustomUserManager(BaseUserManager):
@@ -23,10 +30,22 @@ class CustomUserManager(BaseUserManager):
 # This is custom user model
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
+    phone = models.CharField(
+        max_length=10,
+        validators=[
+            RegexValidator(
+                regex=r'^\d{10}$',
+                message="Phone number must be exactly 10 digits."
+            ),
+            MinLengthValidator(10),
+            MaxLengthValidator(10),
+        ]
+    )
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES)
 
     objects = CustomUserManager()
 

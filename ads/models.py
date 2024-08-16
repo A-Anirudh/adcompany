@@ -1,6 +1,7 @@
 from django.db import models
 from users.models import CustomUser
 from django.utils import timezone
+from django.conf import settings
 
 class Gender(models.Model):
     value = models.CharField(max_length=10, unique=True)
@@ -75,3 +76,8 @@ class AdAnalytics(models.Model):
 
     def __str__(self):
         return f"Analytics for Ad: {self.ad.title}"
+
+class AdPreferences(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    google_ads_opt_in = models.BooleanField(default=True)
+    facebook_ads_opt_in = models.BooleanField(default=True)

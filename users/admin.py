@@ -4,21 +4,21 @@ from .models import CustomUser
 
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
-    list_display = ('email', 'first_name', 'last_name', 'is_staff', 'is_active')
-    list_filter = ('is_staff', 'is_active')
+    list_display = ('email', 'first_name', 'last_name', 'role', 'is_staff', 'is_active')
+    list_filter = ('is_staff', 'is_active', 'role')
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        ('Personal info', {'fields': ('first_name', 'last_name')}),
+        ('Personal info', {'fields': ('first_name', 'last_name', 'role','phone')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Important dates', {'fields': ('last_login', )}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2', 'first_name', 'last_name'),
+            'fields': ('email', 'password1', 'password2', 'first_name', 'last_name', 'role','phone'),
         }),
     )
-    search_fields = ('email',)
+    search_fields = ('email', 'role','phone')
     ordering = ('email',)
     filter_horizontal = ('groups', 'user_permissions',)
 
