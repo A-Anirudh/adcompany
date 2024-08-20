@@ -31,6 +31,8 @@ class CustomUserManager(BaseUserManager):
 # This is custom user model
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
+    last_name = None  # Remove the last_name field
+
     phone = models.CharField(
         max_length=10,
         validators=[
@@ -42,8 +44,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
             MaxLengthValidator(10),
         ]
     )
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
+    name = models.CharField(max_length=30)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
@@ -51,10 +52,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name', 'last_name']
+    REQUIRED_FIELDS = ['name']
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.name} {self.last_name}"
     
 class AdPreferences(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -64,5 +65,5 @@ class AdPreferences(models.Model):
 
 
     def __str__(self):
-        return f"{self.user.first_name} {self.user.last_name}"
+        return f"{self.user.name} {self.user.last_name}"
 

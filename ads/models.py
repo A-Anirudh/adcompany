@@ -50,7 +50,7 @@ class Ad(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.title} from {self.user.first_name}"
+        return f"{self.title} from {self.user.name}"
 
 
 class AdAnalytics(models.Model):

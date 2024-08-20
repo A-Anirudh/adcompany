@@ -21,7 +21,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'first_name', 'last_name', 'password', 'password2', 'role', 'phone')
+        fields = ('email', 'name', 'password', 'password2', 'role', 'phone')
 
     def validate(self, data):
         # Ensure passwords match
@@ -42,22 +42,11 @@ class RegisterSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(
             email=validated_data['email'],
             password=validated_data['password'],
-            first_name=validated_data['first_name'],
-            last_name=validated_data['last_name'],
+            name=validated_data['name'],
             role=validated_data['role'],
             phone=validated_data['phone']
         )
-        # print(f"User created: {user.email}")
 
-        # print(validated_data['role'])
-        # if validated_data['role'] == 'merchant':
-        #     try:
-        #         ad_pref = AdPreferences.objects.create(
-        #             user=user
-        #         )
-        #         print(f"AdPreferences created for user: {user.email}")
-        #     except Exception as e:
-        #         print(f"Error creating AdPreferences: {e}")
 
 
         return user
