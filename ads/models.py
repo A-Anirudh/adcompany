@@ -1,6 +1,7 @@
 from django.db import models
 from users.models import CustomUser
 from django.utils import timezone
+from datetime import datetime
 
 class Gender(models.Model):
     value = models.CharField(max_length=10, unique=True)
@@ -51,8 +52,37 @@ class Ad(models.Model):
 
     def __str__(self):
         return f"{self.title} from {self.user.name}"
+    
+
+# Budget for the user for one ad only!!!
+class Budget(models.Model):
+    ad = models.OneToOneField(Ad, on_delete=models.CASCADE)
+    advertiser = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    total_budget = models.DecimalField(max_digits=10, decimal_places=2)
+    remaining_budget = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # Ensure default value
+
+    def save(self, *args, **kwargs):
+        if not self.remaining_budget:
+            self.remaining_budget = self.total_budget  # Set remaining_budget to total_budget if not provided
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.ad.title} budget"
 
 
+# Spending history of that user for analytics and other purpose we can use.
+class SpendingHistory(models.Model):
+    budget = models.ForeignKey(Budget, on_delete=models.CASCADE, related_name='spending_history')
+    date = models.DateField()
+    amount_spent = models.DecimalField(max_digits=10, decimal_places=2)
+    remaining_budget = models.DecimalField(max_digits=10, decimal_places=2)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Spending on {self.date} for {self.budget.ad.title}"
+
+
+# Analytics below
 class AdAnalytics(models.Model):
     ad = models.OneToOneField(Ad, on_delete=models.CASCADE, related_name='analytics')
     total_playtime = models.FloatField(default=0)  # Total playtime in seconds

@@ -55,7 +55,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['name']
 
     def __str__(self):
-        return f"{self.name} {self.last_name}"
+        return f"{self.name}"
     
 class AdPreferences(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -65,5 +65,5 @@ class AdPreferences(models.Model):
 
 
     def __str__(self):
-        return f"{self.user.name} {self.user.last_name}"
+        return f"{self.user.name}"
 

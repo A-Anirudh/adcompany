@@ -5,20 +5,21 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from rest_framework.parsers import JSONParser
 from rest_framework import status
-from .models import Ad, AdAnalytics
-from .serializers import AdSerializer
+from .models import Ad, AdAnalytics, Budget
+from .serializers import AdSerializer,BudgetSerializer
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
 
-# All ads of a particular user
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def ad_operations(request, ad_id=None):
     user = request.user
+    print('request came through', user, request.user)
 
+    # GET method for retrieving ads
     if request.method == 'GET':
         if ad_id:
             try:
@@ -32,28 +33,56 @@ def ad_operations(request, ad_id=None):
             serializer = AdSerializer(ads, many=True)
             return JsonResponse(serializer.data, safe=False)
 
+    # POST method for creating a new ad and budget
     elif request.method == 'POST':
         data = JSONParser().parse(request)
-        serializer = AdSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save(user=user)
-            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
-        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        ad_serializer = AdSerializer(data=data, context={'request': request})
+
+        if ad_serializer.is_valid():
+            ad = ad_serializer.save()
+            if 'total_budget' in data:
+                budget_data = {
+                    'ad': ad.id,
+                    'advertiser': user.id,
+                    'total_budget': data['total_budget'],
+                    'remaining_budget': data['total_budget']  # Set the initial remaining_budget
+                }
+                budget_serializer = BudgetSerializer(data=budget_data)
+                if budget_serializer.is_valid():
+                    budget_serializer.save()
+                else:
+                    ad.delete()
+                    return JsonResponse(budget_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(ad_serializer.data, status=status.HTTP_201_CREATED)
+        return JsonResponse(ad_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == 'PUT':
         if not ad_id:
             return JsonResponse({'error': 'Ad ID is required for updating'}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
             ad = Ad.objects.get(id=ad_id, user=user)
+            budget = Budget.objects.get(ad=ad)
             data = JSONParser().parse(request)
-            serializer = AdSerializer(ad, data=data)
-            if serializer.is_valid():
-                serializer.save(user=user)
-                return JsonResponse(serializer.data)
-            return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            ad_serializer = AdSerializer(ad, data=data, partial=True)
+            if ad_serializer.is_valid():
+                ad_serializer.save()
+                if 'total_budget' in data:
+                    total_budget = data.get('total_budget')
+                    budget.remaining_budget += (total_budget - budget.total_budget)  # Adjust the remaining budget
+                    budget.total_budget = total_budget
+                    budget_serializer = BudgetSerializer(budget, partial=True)
+                    if budget_serializer.is_valid():
+                        budget_serializer.save()
+                    else:
+                        return JsonResponse(budget_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse(ad_serializer.data, status=status.HTTP_200_OK)
+            return JsonResponse(ad_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Ad.DoesNotExist:
             return JsonResponse({'error': 'Ad not found'}, status=status.HTTP_404_NOT_FOUND)
-
+        except Budget.DoesNotExist:
+            return JsonResponse({'error': 'Budget not found'}, status=status.HTTP_404_NOT_FOUND)
+    # DELETE method for deleting an ad
     elif request.method == 'DELETE':
         if not ad_id:
             return JsonResponse({'error': 'Ad ID is required for deletion'}, status=status.HTTP_400_BAD_REQUEST)
@@ -63,6 +92,7 @@ def ad_operations(request, ad_id=None):
             return JsonResponse({'message': 'Ad deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
         except Ad.DoesNotExist:
             return JsonResponse({'error': 'Ad not found'}, status=status.HTTP_404_NOT_FOUND)
+        
 
 # Track analytics for an ad
 @api_view(['POST'])
